@@ -1,14 +1,15 @@
 from token_types import TokenType
-from ast_nodes import Number, BinaryOp
+from ast_nodes import (Number, BinaryOp, Identifier, FunctionDef, 
+                       FunctionCall, IfExpr, Comparison)
 
 class Parser:
     def __init__(self, tokens):
         self.tokens = tokens
         self.pos = 0
-        self.current_token = self.tokens[0]
+        self.current_token = self.tokens[0] if tokens else None
     
-    def error(self):
-        raise Exception(f'Invalid syntax at position {self.pos}')
+    def error(self, msg="Invalid syntax"):
+        raise Exception(f'{msg} at position {self.pos}, token: {self.current_token}')
     
     def advance(self):
         """حرکت به token بعدی"""
@@ -21,15 +22,24 @@ class Parser:
         if self.current_token.type == token_type:
             self.advance()
         else:
-            self.error()
+            self.error(f"Expected {token_type}, got {self.current_token.type}")
     
     def factor(self):
-        """factor : NUMBER | LPAREN expr RPAREN"""
+        """
+        factor : NUMBER 
+               | IDENTIFIER
+               | LPAREN expr RPAREN
+               | HASH IDENTIFIER LPAREN arguments RPAREN  (function call)
+        """
         token = self.current_token
         
         if token.type == TokenType.NUMBER:
             self.eat(TokenType.NUMBER)
             return Number(token.value)
+        
+        elif token.type == TokenType.IDENTIFIER:
+            self.eat(TokenType.IDENTIFIER)
+            return Identifier(token.value)
         
         elif token.type == TokenType.LPAREN:
             self.eat(TokenType.LPAREN)
@@ -37,7 +47,17 @@ class Parser:
             self.eat(TokenType.RPAREN)
             return node
         
-        self.error()
+        elif token.type == TokenType.HASH:
+            # Function call: #fact(5)
+            self.eat(TokenType.HASH)
+            func_name = self.current_token.value
+            self.eat(TokenType.IDENTIFIER)
+            self.eat(TokenType.LPAREN)
+            arguments = self.arguments()
+            self.eat(TokenType.RPAREN)
+            return FunctionCall(func_name, arguments)
+        
+        self.error("Expected number, identifier, or expression")
     
     def term(self):
         """term : factor ((MULTIPLY | DIVIDE) factor)*"""
@@ -54,8 +74,8 @@ class Parser:
         
         return node
     
-    def expr(self):
-        """expr : term ((PLUS | MINUS) term)*"""
+    def arith_expr(self):
+        """arith_expr : term ((PLUS | MINUS) term)*"""
         node = self.term()
         
         while self.current_token.type in (TokenType.PLUS, TokenType.MINUS):
@@ -69,6 +89,86 @@ class Parser:
         
         return node
     
+    def comparison(self):
+        """comparison : arith_expr (EQUALS arith_expr)?"""
+        node = self.arith_expr()
+        
+        if self.current_token.type == TokenType.EQUALS:
+            op_token = self.current_token
+            self.eat(TokenType.EQUALS)
+            node = Comparison(left=node, operator=op_token.type, right=self.arith_expr())
+        
+        return node
+    
+    def expr(self):
+        """
+        expr : IF expr THEN expr ELSE expr
+             | comparison
+        """
+        if self.current_token.type == TokenType.IF:
+            self.eat(TokenType.IF)
+            condition = self.expr()
+            self.eat(TokenType.THEN)
+            true_branch = self.expr()
+            self.eat(TokenType.ELSE)
+            false_branch = self.expr()
+            return IfExpr(condition, true_branch, false_branch)
+        
+        return self.comparison()
+    
+    def arguments(self):
+        """arguments : expr (COMMA expr)* | empty"""
+        args = []
+        
+        if self.current_token.type == TokenType.RPAREN:
+            return args
+        
+        args.append(self.expr())
+        
+        while self.current_token.type == TokenType.COMMA:
+            self.eat(TokenType.COMMA)
+            args.append(self.expr())
+        
+        return args
+    
+    def parameters(self):
+        """parameters : IDENTIFIER (COMMA IDENTIFIER)* | empty"""
+        params = []
+        
+        if self.current_token.type == TokenType.RPAREN:
+            return params
+        
+        params.append(self.current_token.value)
+        self.eat(TokenType.IDENTIFIER)
+        
+        while self.current_token.type == TokenType.COMMA:
+            self.eat(TokenType.COMMA)
+            params.append(self.current_token.value)
+            self.eat(TokenType.IDENTIFIER)
+        
+        return params
+    
+    def statement(self):
+        """
+        statement : FUNC IDENTIFIER LPAREN parameters RPAREN ASSIGN expr
+                  | expr
+        """
+        if self.current_token.type == TokenType.FUNC:
+            self.eat(TokenType.FUNC)
+            func_name = self.current_token.value
+            self.eat(TokenType.IDENTIFIER)
+            self.eat(TokenType.LPAREN)
+            params = self.parameters()
+            self.eat(TokenType.RPAREN)
+            self.eat(TokenType.ASSIGN)
+            body = self.expr()
+            return FunctionDef(func_name, params, body)
+        
+        return self.expr()
+    
     def parse(self):
         """شروع parsing"""
-        return self.expr()
+        node = self.statement()
+        if self.current_token.type != TokenType.EOF:
+            self.error("Expected end of input")
+        return node
