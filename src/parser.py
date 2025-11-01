@@ -12,25 +12,17 @@ class Parser:
         raise Exception(f'{msg} at position {self.pos}, token: {self.current_token}')
     
     def advance(self):
-        """حرکت به token بعدی"""
         self.pos += 1
         if self.pos < len(self.tokens):
             self.current_token = self.tokens[self.pos]
     
     def eat(self, token_type):
-        """بررسی و مصرف token مورد انتظار"""
         if self.current_token.type == token_type:
             self.advance()
         else:
             self.error(f"Expected {token_type}, got {self.current_token.type}")
     
     def factor(self):
-        """
-        factor : NUMBER 
-               | IDENTIFIER
-               | LPAREN expr RPAREN
-               | HASH IDENTIFIER LPAREN arguments RPAREN  (function call)
-        """
         token = self.current_token
         
         if token.type == TokenType.NUMBER:
@@ -48,7 +40,6 @@ class Parser:
             return node
         
         elif token.type == TokenType.HASH:
-            # Function call: #fact(5)
             self.eat(TokenType.HASH)
             func_name = self.current_token.value
             self.eat(TokenType.IDENTIFIER)
@@ -60,7 +51,6 @@ class Parser:
         self.error("Expected number, identifier, or expression")
     
     def term(self):
-        """term : factor ((MULTIPLY | DIVIDE) factor)*"""
         node = self.factor()
         
         while self.current_token.type in (TokenType.MULTIPLY, TokenType.DIVIDE):
@@ -75,7 +65,6 @@ class Parser:
         return node
     
     def arith_expr(self):
-        """arith_expr : term ((PLUS | MINUS) term)*"""
         node = self.term()
         
         while self.current_token.type in (TokenType.PLUS, TokenType.MINUS):
@@ -90,7 +79,6 @@ class Parser:
         return node
     
     def comparison(self):
-        """comparison : arith_expr (EQUALS arith_expr)?"""
         node = self.arith_expr()
         
         if self.current_token.type == TokenType.EQUALS:
@@ -101,11 +89,6 @@ class Parser:
         return node
     
     def expr(self):
-        """
-        expr : IF expr THEN expr ELSE expr
-             | LET IDENTIFIER ASSIGN expr IN expr  (let expression)
-             | comparison
-        """
         if self.current_token.type == TokenType.IF:
             self.eat(TokenType.IF)
             condition = self.expr()
@@ -115,91 +98,56 @@ class Parser:
             false_branch = self.expr()
             return IfExpr(condition, true_branch, false_branch)
         
-        # ⭐⭐⭐ Let Expression: let x = 10 in x + 1
         elif self.current_token.type == TokenType.LET:
             self.eat(TokenType.LET)
             var_name = self.current_token.value
             self.eat(TokenType.IDENTIFIER)
             self.eat(TokenType.ASSIGN)
             value_expr = self.expr()
-            
-            # بررسی می‌کنیم که آیا IN داریم؟
             if self.current_token.type == TokenType.IN:
                 self.eat(TokenType.IN)
                 body_expr = self.expr()
                 return LetExpression(var_name, value_expr, body_expr)
             else:
-                # این یه statement هست، نه expression
                 raise Exception("let without 'in' is not allowed in expression context. Use 'let x = ... in ...'")
         
         return self.comparison()
     
     def arguments(self):
-        """arguments : expr (COMMA expr)* | empty"""
         args = []
-        
         if self.current_token.type == TokenType.RPAREN:
             return args
-        
         args.append(self.expr())
-        
         while self.current_token.type == TokenType.COMMA:
             self.eat(TokenType.COMMA)
             args.append(self.expr())
-        
         return args
     
     def parameters(self):
-        """parameters : IDENTIFIER (COMMA IDENTIFIER)* | empty"""
         params = []
-        
         if self.current_token.type == TokenType.RPAREN:
             return params
-        
         params.append(self.current_token.value)
         self.eat(TokenType.IDENTIFIER)
-        
         while self.current_token.type == TokenType.COMMA:
             self.eat(TokenType.COMMA)
             params.append(self.current_token.value)
             self.eat(TokenType.IDENTIFIER)
-        
         return params
     
     def statement(self):
-        """
-        statement : LET IDENTIFIER ASSIGN expr                (let-statement)
-                | LET IDENTIFIER ASSIGN expr IN expr       (let-expression)
-                | FUNC IDENTIFIER LPAREN parameters RPAREN ASSIGN expr
-                | expr
-        """
         if self.current_token.type == TokenType.LET:
-            # Disambiguation: let-statement vs let-expression
             self.eat(TokenType.LET)
             var_name = self.current_token.value
             self.eat(TokenType.IDENTIFIER)
             self.eat(TokenType.ASSIGN)
             value_expr = self.expr()
-
-            # If we see `in`, this is a let-expression
             if self.current_token.type == TokenType.IN:
                 self.eat(TokenType.IN)
                 body_expr = self.expr()
                 return LetExpression(var_name, value_expr, body_expr)
-
-            # Otherwise, it's a let-statement
             return LetStatement(var_name, value_expr)
 
-        # if self.current_token.type == TokenType.FUNC:
-        #     self.eat(TokenType.FUNC)
-        #     func_name = self.current_token.value
-        #     self.eat(TokenType.IDENTIFIER)
-        #     self.eat(TokenType.LPAREN)
-        #     params = self.parameters()
-        #     self.eat(TokenType.RPAREN)
-        #     self.eat(TokenType.ASSIGN)
-        #     body = self.expr()
-        #     return FunctionDef(func_name, params, body)
         if self.current_token.type == TokenType.FUNC:
             self.eat(TokenType.FUNC)
             func_name = self.current_token.value
@@ -208,35 +156,21 @@ class Parser:
             params = self.parameters()
             self.eat(TokenType.RPAREN)
             self.eat(TokenType.ASSIGN)
-
-            # حالت جدید: بدنه بین { ... } با چند statement
             if self.current_token.type == TokenType.LBRACE:
                 self.eat(TokenType.LBRACE)
                 statements = []
-                # تا قبل از } هر بار یک statement بخوان
                 while self.current_token.type != TokenType.RBRACE:
                     statements.append(self.statement())
                 self.eat(TokenType.RBRACE)
                 body = Block(statements)
                 return FunctionDef(func_name, params, body)
-
-            # حالت قدیمی: تک‌عبارت
             body = self.expr()
             return FunctionDef(func_name, params, body)
 
-        # fallback: plain expression
         return self.expr()
 
-
     def parse(self):
-        """Parse a single top-level statement or expression."""
         node = self.statement()
         if self.current_token.type != TokenType.EOF:
             self.error("Expected end of input")
         return node
-
-    
-
-    
-    
-    

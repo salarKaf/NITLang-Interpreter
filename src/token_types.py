@@ -2,35 +2,30 @@ from enum import Enum
 
 
 class TokenType(Enum):
-    # Literals
     NUMBER = "NUMBER"
     IDENTIFIER = "IDENTIFIER"
 
-    # Keywords
     FUNC = "FUNC"
     IF = "IF"
     THEN = "THEN"
     ELSE = "ELSE"
-    LET = "LET"  # ⭐ اضافه شد برای فاز 3
-    IN = "IN"  # ⭐ برای let expression
+    LET = "LET"  
+    IN = "IN"  
 
-    # Operators
     PLUS = "PLUS"
     MINUS = "MINUS"
     MULTIPLY = "MULTIPLY"
     DIVIDE = "DIVIDE"
-    EQUALS = "EQUALS"  # ==
-    ASSIGN = "ASSIGN"  # =
+    EQUALS = "EQUALS"  
+    ASSIGN = "ASSIGN"  
 
-    # Structure
-    LPAREN = "LPAREN"  # (
-    RPAREN = "RPAREN"  # )
-    COMMA = "COMMA"  # ,
-    HASH = "HASH"  # # (برای فراخوانی تابع)
-    LBRACE = "LBRACE"  # {
-    RBRACE = "RBRACE"  # }
+    LPAREN = "LPAREN"  
+    RPAREN = "RPAREN"  
+    COMMA = "COMMA"  
+    HASH = "HASH" 
+    LBRACE = "LBRACE"  
+    RBRACE = "RBRACE" 
 
-    # Special
     EOF = "EOF"
 
 
@@ -44,12 +39,11 @@ class Token:
         return f"Token({self.type}, {self.value}, pos={self.position})"
 
 
-# Keywords dictionary
 KEYWORDS = {
     'func': TokenType.FUNC,
     'if': TokenType.IF,
     'then': TokenType.THEN,
     'else': TokenType.ELSE,
-    'let': TokenType.LET,  # ⭐ اضافه شد
-    'in': TokenType.IN,  # ⭐ اضافه شد
+    'let': TokenType.LET,  
+    'in': TokenType.IN,  
 }

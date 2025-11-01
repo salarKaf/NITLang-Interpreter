@@ -1,14 +1,7 @@
-"""
-تست گام 1: Arithmetic Expressions
-این فایل تمام ویژگی‌های گام 1 رو تست می‌کنه
-"""
-
 import sys
-
-sys.path.insert(0, '..')
-
 import os
 
+sys.path.insert(0, '..')
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
 
 from src.lexer import Lexer
@@ -17,7 +10,6 @@ from src.interpreter import Interpreter
 
 
 def test(name, code, expected):
-    """اجرای یک تست"""
     try:
         lexer = Lexer(code)
         tokens = lexer.tokenize()
@@ -27,17 +19,17 @@ def test(name, code, expected):
         result = interpreter.interpret(tree)
 
         if result == expected:
-            print(f"✅ {name}")
+            print(f"{name}")
             print(f"   Code: {code}")
             print(f"   Result: {result}")
             return True
         else:
-            print(f"❌ {name}")
+            print(f"{name}")
             print(f"   Code: {code}")
             print(f"   Expected: {expected}, Got: {result}")
             return False
     except Exception as e:
-        print(f"❌ {name}")
+        print(f"{name}")
         print(f"   Code: {code}")
         print(f"   Error: {e}")
         return False
@@ -52,8 +44,7 @@ def run_tests():
     passed = 0
     total = 0
 
-    # Basic operations
-    print("📌 Basic Operations:")
+    print("Basic Operations:")
     tests = [
         ("Simple addition", "2 + 3", 5),
         ("Simple subtraction", "10 - 3", 7),
@@ -67,8 +58,7 @@ def run_tests():
             passed += 1
         print()
 
-    # Operator precedence
-    print("📌 Operator Precedence:")
+    print("Operator Precedence:")
     tests = [
         ("Multiplication before addition", "2 + 3 * 4", 14),
         ("Division before subtraction", "20 - 10 / 2", 15),
@@ -82,8 +72,7 @@ def run_tests():
             passed += 1
         print()
 
-    # Parentheses
-    print("📌 Parentheses:")
+    print("Parentheses:")
     tests = [
         ("Override precedence", "(2 + 3) * 4", 20),
         ("Nested parentheses", "((2 + 3) * 4) / 2", 10),
@@ -96,8 +85,7 @@ def run_tests():
             passed += 1
         print()
 
-    # Edge cases
-    print("📌 Edge Cases:")
+    print("Edge Cases:")
     tests = [
         ("Single number", "42", 42),
         ("Zero", "0", 0),
@@ -112,8 +100,7 @@ def run_tests():
             passed += 1
         print()
 
-    # Division by zero (should raise error)
-    print("📌 Error Handling:")
+    print("Error Handling:")
     print("Testing division by zero:")
     try:
         lexer = Lexer("10 / 0")
@@ -122,26 +109,21 @@ def run_tests():
         tree = parser.parse()
         interpreter = Interpreter()
         result = interpreter.interpret(tree)
-        print("❌ Division by zero should raise error")
+        print("Division by zero should raise error")
         print()
     except Exception as e:
-        print(f"✅ Correctly caught error: {e}")
+        print(f"Correctly caught error: {e}")
         passed += 1
         print()
     total += 1
 
-    # Summary
     print("=" * 70)
     print(f"RESULTS: {passed}/{total} tests passed")
     if passed == total:
-        print("🎉 ALL STEP 1 TESTS PASSED!")
+        print("ALL STEP 1 TESTS PASSED!")
     else:
-        print(f"⚠️  {total - passed} test(s) failed")
+        print(f"{total - passed} test(s) failed")
     print("=" * 70)
-
-
-# if __name__ == '__main__':
-#     run_tests()
 
 
 def test_step1_suite_pytest(capsys):

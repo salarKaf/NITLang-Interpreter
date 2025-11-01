@@ -1,5 +1,4 @@
 class ASTNode:
-    """کلاس پایه برای همه node های AST"""
     pass
 
 
@@ -22,7 +21,6 @@ class BinaryOp(ASTNode):
 
 
 class Identifier(ASTNode):
-    """نام متغیر یا پارامتر"""
 
     def __init__(self, name):
         self.name = name
@@ -32,12 +30,11 @@ class Identifier(ASTNode):
 
 
 class FunctionDef(ASTNode):
-    """تعریف تابع: func fact(n) = body"""
 
     def __init__(self, name, params, body):
-        self.name = name  # نام تابع
-        self.params = params  # لیست پارامترها
-        self.body = body  # بدنه تابع (یک AST node)
+        self.name = name  
+        self.params = params 
+        self.body = body  
 
     def __repr__(self):
         params_str = ', '.join(self.params)
@@ -45,11 +42,10 @@ class FunctionDef(ASTNode):
 
 
 class FunctionCall(ASTNode):
-    """فراخوانی تابع: #fact(5)"""
 
     def __init__(self, name, arguments):
-        self.name = name  # نام تابع
-        self.arguments = arguments  # لیست آرگومان‌ها
+        self.name = name  
+        self.arguments = arguments  
 
     def __repr__(self):
         args_str = ', '.join(str(arg) for arg in self.arguments)
@@ -57,7 +53,6 @@ class FunctionCall(ASTNode):
 
 
 class IfExpr(ASTNode):
-    """عبارت شرطی: if condition then true_branch else false_branch"""
 
     def __init__(self, condition, true_branch, false_branch):
         self.condition = condition
@@ -69,7 +64,6 @@ class IfExpr(ASTNode):
 
 
 class Comparison(ASTNode):
-    """مقایسه: a == b"""
 
     def __init__(self, left, operator, right):
         self.left = left
@@ -80,29 +74,22 @@ class Comparison(ASTNode):
         return f"Comparison({self.left} {self.operator.name} {self.right})"
 
 
-# ⭐⭐⭐ کلاس جدید برای فاز 3: Let Statement
 class LetStatement(ASTNode):
-    """تعریف متغیر: let x = 10"""
 
     def __init__(self, name, value):
-        self.name = name  # نام متغیر
-        self.value = value  # مقدار (یک expression)
+        self.name = name  
+        self.value = value  
 
     def __repr__(self):
         return f"LetStatement({self.name} = {self.value})"
 
 
-# ⭐⭐⭐ کلاس جدید: Let Expression (برای استفاده در بدنه توابع)
 class LetExpression(ASTNode):
-    """
-    Let expression: let x = 10 in x + 1
-    این اجازه میده که let رو توی expression ها استفاده کنیم
-    """
 
     def __init__(self, name, value, body):
-        self.name = name  # نام متغیر
-        self.value = value  # مقدار متغیر
-        self.body = body  # expression ای که از این متغیر استفاده می‌کنه
+        self.name = name  
+        self.value = value  
+        self.body = body  
 
     def __repr__(self):
         return f"LetExpression(let {self.name} = {self.value} in {self.body})"
@@ -110,7 +97,7 @@ class LetExpression(ASTNode):
 
 class Block(ASTNode):
     def __init__(self, statements):
-        self.statements = statements  # list of AST nodes
+        self.statements = statements  
 
     def __repr__(self):
         return f"Block({self.statements})"

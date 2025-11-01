@@ -33,19 +33,16 @@ def main():
             if not text.strip():
                 continue
 
-            # مرحله 1: Lexing
             lexer = Lexer(text)
             tokens = lexer.tokenize()
             if debug_mode:
                 print(f"Tokens: {tokens}")
 
-            # مرحله 2: Parsing
             parser = Parser(tokens)
             tree = parser.parse()
             if debug_mode:
                 print(f"AST: {tree}")
 
-            # مرحله 3: Interpreting
             result = interpreter.interpret(tree)
             print(f"=> {result}\n")
 
@@ -56,19 +53,16 @@ def main():
 
 
 def run_file(filename):
-    """اجرای یک فایل NITLang"""
     try:
         with open(filename, 'r', encoding='utf-8') as f:
             content = f.read()
 
         interpreter = Interpreter()
 
-        # اجرای هر خط
         for line_num, line in enumerate(content.split('\n'), 1):
             line = line.strip()
             if not line or line.startswith('#'):
                 continue
-
             try:
                 lexer = Lexer(line)
                 tokens = lexer.tokenize()
@@ -87,10 +81,7 @@ def run_file(filename):
 
 if __name__ == '__main__':
     import sys
-
     if len(sys.argv) > 1:
-        # اجرای فایل
         run_file(sys.argv[1])
     else:
-        # حالت REPL
         main()
