@@ -1,6 +1,6 @@
 from token_types import TokenType
-from ast_nodes import (Number, BinaryOp, Identifier, FunctionDef, 
-                       FunctionCall, IfExpr, Comparison, LetStatement, LetExpression)
+from ast_nodes import (Number, BinaryOp, Identifier, FunctionDef,
+                       FunctionCall, IfExpr, Comparison, LetStatement, LetExpression, Block)
 
 class Environment:
     """
@@ -198,6 +198,12 @@ class Interpreter:
         finally:
             # بازگرداندن environment قبلی
             self.current_env = previous_env
-    
+
+    def visit_Block(self, node):
+        last = None
+        for stmt in node.statements:
+            last = self.visit(stmt)
+        return last
+
     def interpret(self, tree):
         return self.visit(tree)

@@ -109,11 +109,20 @@ class Lexer:
                 pos = self.pos
                 self.advance()
                 return Token(TokenType.LPAREN, '(', pos)
-            
+
             if self.current_char == ')':
                 pos = self.pos
                 self.advance()
                 return Token(TokenType.RPAREN, ')', pos)
+            if self.current_char == '{':
+                pos = self.pos
+                self.advance()
+                return Token(TokenType.LBRACE, '{', pos)
+
+            if self.current_char == '}':
+                pos = self.pos
+                self.advance()
+                return Token(TokenType.RBRACE, '}', pos)
             
             if self.current_char == ',':
                 pos = self.pos

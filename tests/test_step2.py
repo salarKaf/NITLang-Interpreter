@@ -9,9 +9,9 @@ sys.path.insert(0, '..')
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
 
-from lexer import Lexer
-from parser import Parser
-from interpreter import Interpreter
+from src.lexer import Lexer
+from src.parser import Parser
+from src.interpreter import Interpreter
 
 class TestRunner:
     def __init__(self):
@@ -162,5 +162,10 @@ def run_tests():
     
     runner.summary()
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
+#     run_tests()
+
+def test_step2_suite_pytest(capsys):
     run_tests()
+    out = capsys.readouterr().out
+    assert "ALL STEP 2 TESTS PASSED" in out or "RESULTS:" in out

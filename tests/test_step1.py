@@ -4,14 +4,18 @@
 """
 
 import sys
+
 sys.path.insert(0, '..')
 
 import os
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
 
-from lexer import Lexer
-from parser import Parser
-from interpreter import Interpreter
+from src.lexer import Lexer
+from src.parser import Parser
+from src.interpreter import Interpreter
+
+
 def test(name, code, expected):
     """اجرای یک تست"""
     try:
@@ -21,7 +25,7 @@ def test(name, code, expected):
         tree = parser.parse()
         interpreter = Interpreter()
         result = interpreter.interpret(tree)
-        
+
         if result == expected:
             print(f"✅ {name}")
             print(f"   Code: {code}")
@@ -38,15 +42,16 @@ def test(name, code, expected):
         print(f"   Error: {e}")
         return False
 
+
 def run_tests():
-    print("="*70)
+    print("=" * 70)
     print("STEP 1: ARITHMETIC EXPRESSIONS TEST")
-    print("="*70)
+    print("=" * 70)
     print()
-    
+
     passed = 0
     total = 0
-    
+
     # Basic operations
     print("📌 Basic Operations:")
     tests = [
@@ -55,13 +60,13 @@ def run_tests():
         ("Simple multiplication", "4 * 5", 20),
         ("Simple division", "20 / 4", 5),
     ]
-    
+
     for name, code, expected in tests:
         total += 1
         if test(name, code, expected):
             passed += 1
         print()
-    
+
     # Operator precedence
     print("📌 Operator Precedence:")
     tests = [
@@ -70,13 +75,13 @@ def run_tests():
         ("Multiple operations", "2 + 3 * 4 - 5", 9),
         ("Complex expression", "10 - 2 * 3 + 4", 8),
     ]
-    
+
     for name, code, expected in tests:
         total += 1
         if test(name, code, expected):
             passed += 1
         print()
-    
+
     # Parentheses
     print("📌 Parentheses:")
     tests = [
@@ -84,13 +89,13 @@ def run_tests():
         ("Nested parentheses", "((2 + 3) * 4) / 2", 10),
         ("Multiple groups", "(10 - 5) * (3 + 2)", 25),
     ]
-    
+
     for name, code, expected in tests:
         total += 1
         if test(name, code, expected):
             passed += 1
         print()
-    
+
     # Edge cases
     print("📌 Edge Cases:")
     tests = [
@@ -100,13 +105,13 @@ def run_tests():
         ("Multiple additions", "1 + 2 + 3 + 4", 10),
         ("Multiple multiplications", "2 * 3 * 4", 24),
     ]
-    
+
     for name, code, expected in tests:
         total += 1
         if test(name, code, expected):
             passed += 1
         print()
-    
+
     # Division by zero (should raise error)
     print("📌 Error Handling:")
     print("Testing division by zero:")
@@ -124,15 +129,22 @@ def run_tests():
         passed += 1
         print()
     total += 1
-    
+
     # Summary
-    print("="*70)
+    print("=" * 70)
     print(f"RESULTS: {passed}/{total} tests passed")
     if passed == total:
         print("🎉 ALL STEP 1 TESTS PASSED!")
     else:
         print(f"⚠️  {total - passed} test(s) failed")
-    print("="*70)
+    print("=" * 70)
 
-if __name__ == '__main__':
+
+# if __name__ == '__main__':
+#     run_tests()
+
+
+def test_step1_suite_pytest(capsys):
     run_tests()
+    out = capsys.readouterr().out
+    assert "ALL STEP 1 TESTS PASSED" in out or "RESULTS:" in out

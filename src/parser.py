@@ -1,6 +1,6 @@
 from token_types import TokenType
-from ast_nodes import (Number, BinaryOp, Identifier, FunctionDef, 
-                       FunctionCall, IfExpr, Comparison, LetStatement, LetExpression)
+from ast_nodes import (Number, BinaryOp, Identifier, FunctionDef,
+                       FunctionCall, IfExpr, Comparison, LetStatement, LetExpression, Block)
 
 class Parser:
     def __init__(self, tokens):
@@ -190,6 +190,16 @@ class Parser:
             # Otherwise, it's a let-statement
             return LetStatement(var_name, value_expr)
 
+        # if self.current_token.type == TokenType.FUNC:
+        #     self.eat(TokenType.FUNC)
+        #     func_name = self.current_token.value
+        #     self.eat(TokenType.IDENTIFIER)
+        #     self.eat(TokenType.LPAREN)
+        #     params = self.parameters()
+        #     self.eat(TokenType.RPAREN)
+        #     self.eat(TokenType.ASSIGN)
+        #     body = self.expr()
+        #     return FunctionDef(func_name, params, body)
         if self.current_token.type == TokenType.FUNC:
             self.eat(TokenType.FUNC)
             func_name = self.current_token.value
@@ -198,6 +208,19 @@ class Parser:
             params = self.parameters()
             self.eat(TokenType.RPAREN)
             self.eat(TokenType.ASSIGN)
+
+            # حالت جدید: بدنه بین { ... } با چند statement
+            if self.current_token.type == TokenType.LBRACE:
+                self.eat(TokenType.LBRACE)
+                statements = []
+                # تا قبل از } هر بار یک statement بخوان
+                while self.current_token.type != TokenType.RBRACE:
+                    statements.append(self.statement())
+                self.eat(TokenType.RBRACE)
+                body = Block(statements)
+                return FunctionDef(func_name, params, body)
+
+            # حالت قدیمی: تک‌عبارت
             body = self.expr()
             return FunctionDef(func_name, params, body)
 
