@@ -4,8 +4,8 @@ from interpreter import Interpreter
 
 def main():
     print("=" * 50)
-    print("NITLang Interpreter - Phase 1: Steps 1 & 2")
-    print("Features: Arithmetic + Recursive Functions")
+    print("NITLang Interpreter - Phase 1 Complete")
+    print("Steps 1-3: Arithmetic + Functions + Scope")
     print("=" * 50)
     print("Commands:")
     print("  exit    - Exit the interpreter")
@@ -53,17 +53,16 @@ def main():
         except Exception as e:
             print(f"Error: {e}\n")
 
-
 def run_file(filename):
     """اجرای یک فایل NITLang"""
     try:
-        with open(filename, 'r') as f:
+        with open(filename, 'r', encoding='utf-8') as f:
             content = f.read()
         
         interpreter = Interpreter()
         
         # اجرای هر خط
-        for line in content.split('\n'):
+        for line_num, line in enumerate(content.split('\n'), 1):
             line = line.strip()
             if not line or line.startswith('#'):
                 continue
@@ -74,15 +73,14 @@ def run_file(filename):
                 parser = Parser(tokens)
                 tree = parser.parse()
                 result = interpreter.interpret(tree)
-                print(result)
+                print(f"Line {line_num}: {result}")
             except Exception as e:
-                print(f"Error in line '{line}': {e}")
+                print(f"Error in line {line_num} '{line}': {e}")
     
     except FileNotFoundError:
         print(f"File not found: {filename}")
     except Exception as e:
         print(f"Error: {e}")
-
 
 if __name__ == '__main__':
     import sys

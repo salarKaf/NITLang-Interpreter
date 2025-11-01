@@ -1,6 +1,6 @@
 from token_types import TokenType
 from ast_nodes import (Number, BinaryOp, Identifier, FunctionDef, 
-                       FunctionCall, IfExpr, Comparison)
+                       FunctionCall, IfExpr, Comparison, LetStatement, LetExpression)
 
 class Parser:
     def __init__(self, tokens):
@@ -103,6 +103,7 @@ class Parser:
     def expr(self):
         """
         expr : IF expr THEN expr ELSE expr
+             | LET IDENTIFIER ASSIGN expr IN expr  (let expression)
              | comparison
         """
         if self.current_token.type == TokenType.IF:
@@ -113,6 +114,23 @@ class Parser:
             self.eat(TokenType.ELSE)
             false_branch = self.expr()
             return IfExpr(condition, true_branch, false_branch)
+        
+        # ⭐⭐⭐ Let Expression: let x = 10 in x + 1
+        elif self.current_token.type == TokenType.LET:
+            self.eat(TokenType.LET)
+            var_name = self.current_token.value
+            self.eat(TokenType.IDENTIFIER)
+            self.eat(TokenType.ASSIGN)
+            value_expr = self.expr()
+            
+            # بررسی می‌کنیم که آیا IN داریم؟
+            if self.current_token.type == TokenType.IN:
+                self.eat(TokenType.IN)
+                body_expr = self.expr()
+                return LetExpression(var_name, value_expr, body_expr)
+            else:
+                # این یه statement هست، نه expression
+                raise Exception("let without 'in' is not allowed in expression context. Use 'let x = ... in ...'")
         
         return self.comparison()
     
@@ -150,10 +168,20 @@ class Parser:
     
     def statement(self):
         """
-        statement : FUNC IDENTIFIER LPAREN parameters RPAREN ASSIGN expr
+        statement : LET IDENTIFIER ASSIGN expr           (let statement)
+                  | FUNC IDENTIFIER LPAREN parameters RPAREN ASSIGN expr
                   | expr
         """
-        if self.current_token.type == TokenType.FUNC:
+        # ⭐⭐⭐ پشتیبانی از let statement برای فاز 3
+        if self.current_token.type == TokenType.LET:
+            self.eat(TokenType.LET)
+            var_name = self.current_token.value
+            self.eat(TokenType.IDENTIFIER)
+            self.eat(TokenType.ASSIGN)
+            value_expr = self.expr()
+            return LetStatement(var_name, value_expr)
+        
+        elif self.current_token.type == TokenType.FUNC:
             self.eat(TokenType.FUNC)
             func_name = self.current_token.value
             self.eat(TokenType.IDENTIFIER)

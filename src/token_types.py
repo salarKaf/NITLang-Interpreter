@@ -10,6 +10,8 @@ class TokenType(Enum):
     IF = "IF"
     THEN = "THEN"
     ELSE = "ELSE"
+    LET = "LET"  # ⭐ اضافه شد برای فاز 3
+    IN = "IN"    # ⭐ برای let expression
     
     # Operators
     PLUS = "PLUS"
@@ -17,7 +19,7 @@ class TokenType(Enum):
     MULTIPLY = "MULTIPLY"
     DIVIDE = "DIVIDE"
     EQUALS = "EQUALS"  # ==
-    ASSIGN = "ASSIGN"  # = (برای تعریف تابع)
+    ASSIGN = "ASSIGN"  # =
     
     # Structure
     LPAREN = "LPAREN"    # (
@@ -28,7 +30,6 @@ class TokenType(Enum):
     # Special
     EOF = "EOF"
 
-
 class Token:
     def __init__(self, type, value, position):
         self.type = type
@@ -38,11 +39,12 @@ class Token:
     def __repr__(self):
         return f"Token({self.type}, {self.value}, pos={self.position})"
 
-
 # Keywords dictionary
 KEYWORDS = {
     'func': TokenType.FUNC,
     'if': TokenType.IF,
     'then': TokenType.THEN,
     'else': TokenType.ELSE,
+    'let': TokenType.LET,  # ⭐ اضافه شد
+    'in': TokenType.IN,    # ⭐ اضافه شد
 }
