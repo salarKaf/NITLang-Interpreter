@@ -168,20 +168,29 @@ class Parser:
     
     def statement(self):
         """
-        statement : LET IDENTIFIER ASSIGN expr           (let statement)
-                  | FUNC IDENTIFIER LPAREN parameters RPAREN ASSIGN expr
-                  | expr
+        statement : LET IDENTIFIER ASSIGN expr                (let-statement)
+                | LET IDENTIFIER ASSIGN expr IN expr       (let-expression)
+                | FUNC IDENTIFIER LPAREN parameters RPAREN ASSIGN expr
+                | expr
         """
-        # ⭐⭐⭐ پشتیبانی از let statement برای فاز 3
         if self.current_token.type == TokenType.LET:
+            # Disambiguation: let-statement vs let-expression
             self.eat(TokenType.LET)
             var_name = self.current_token.value
             self.eat(TokenType.IDENTIFIER)
             self.eat(TokenType.ASSIGN)
             value_expr = self.expr()
+
+            # If we see `in`, this is a let-expression
+            if self.current_token.type == TokenType.IN:
+                self.eat(TokenType.IN)
+                body_expr = self.expr()
+                return LetExpression(var_name, value_expr, body_expr)
+
+            # Otherwise, it's a let-statement
             return LetStatement(var_name, value_expr)
-        
-        elif self.current_token.type == TokenType.FUNC:
+
+        if self.current_token.type == TokenType.FUNC:
             self.eat(TokenType.FUNC)
             func_name = self.current_token.value
             self.eat(TokenType.IDENTIFIER)
@@ -191,12 +200,20 @@ class Parser:
             self.eat(TokenType.ASSIGN)
             body = self.expr()
             return FunctionDef(func_name, params, body)
-        
+
+        # fallback: plain expression
         return self.expr()
-    
+
+
     def parse(self):
-        """شروع parsing"""
+        """Parse a single top-level statement or expression."""
         node = self.statement()
         if self.current_token.type != TokenType.EOF:
             self.error("Expected end of input")
         return node
+
+    
+
+    
+    
+    

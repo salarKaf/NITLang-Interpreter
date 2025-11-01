@@ -87,7 +87,7 @@ def run_tests():
     print()
     runner.test("Nested let expressions", "let x = 5 in let y = 10 in x + y", 15)
     print()
-    
+    runner.test("Define global z", "let z = 100", expected=None)
     # Shadowing in Let Expression
     print("📌 Shadowing:")
     runner.test("Let expression shadows global", "let z = 100 in let z = 200 in z", 200)
